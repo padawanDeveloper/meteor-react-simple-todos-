@@ -29,6 +29,7 @@ class App extends Component {
     ));
   }
   render() {
+    /*Retorna estructura de la pagina*/
      return (
        <div className="container">
          <header>
@@ -57,3 +58,13 @@ export default withTracker(() => {
     tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
   };
 })(App);
+
+
+
+
+
+
+
+
+
+
