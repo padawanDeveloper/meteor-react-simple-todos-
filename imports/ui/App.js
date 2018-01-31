@@ -32,7 +32,7 @@ class App extends Component {
      return (
        <div className="container">
          <header>
-           <h1>Todo List</h1>
+           <h1>Lista de tareas</h1>
 
 
           <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
