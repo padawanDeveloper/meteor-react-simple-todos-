@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import { Meteor } from 'meteor/meteor';
 import { withTracker } from 'meteor/react-meteor-data';
  
 import { Tasks } from '../api/tasks.js';
  
 import Task from './Task.js';
+import AccountsUIWrapper from './AccountsUIWrapper.js';
  
 
 class App extends Component {
@@ -20,15 +22,17 @@ class App extends Component {
   handleSubmit(event) {
     event.preventDefault();
  
-    // Find the text field via the React ref
+    // Encuentra el campo del texto con REACT
     const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
  
     Tasks.insert({
       text,
-      createdAt: new Date(), // current time
+      createdAt: new Date(), // fecha registro
+      owner: Meteor.userId(),           // _id de usuario logged
+      username: Meteor.user().username,  // nombre de usuario logged 
     });
  
-    // Clear form
+    // Limpiar form
     ReactDOM.findDOMNode(this.refs.textInput).value = '';
   }
 
@@ -64,13 +68,18 @@ class App extends Component {
             Ocultar tareas completadas
           </label>
 
-          <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
-            <input
-              type="text"
-              ref="textInput"
-              placeholder="Agregue una nueva tarea"
-            />
-          </form>
+          <AccountsUIWrapper />
+
+          { this.props.currentUser ?
+            <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
+              <input
+                type="text"
+                ref="textInput"
+                placeholder="Escribir nueva tarea"
+              />
+            </form> : ''
+          }
+
          </header>
  
          <ul>
@@ -85,6 +94,7 @@ export default withTracker(() => {
   return {
     tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
     incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
+    currentUser: Meteor.user(),
   };
 })(App);
 
