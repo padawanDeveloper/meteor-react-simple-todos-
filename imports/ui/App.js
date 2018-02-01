@@ -25,13 +25,8 @@ class App extends Component {
     // Encuentra el campo del texto con REACT
     const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
  
-    Tasks.insert({
-      text,
-      createdAt: new Date(), // fecha registro
-      owner: Meteor.userId(),           // _id de usuario logged
-      username: Meteor.user().username,  // nombre de usuario logged 
-    });
- 
+    Meteor.call('tasks.insert', text);
+
     // Limpiar form
     ReactDOM.findDOMNode(this.refs.textInput).value = '';
   }
@@ -47,16 +42,25 @@ class App extends Component {
     if (this.state.hideCompleted) {
       filteredTasks = filteredTasks.filter(task => !task.checked);
     }
-    return filteredTasks.map((task) => (
-      <Task key={task._id} task={task} />
-    ));
+    return filteredTasks.map((task) => {
+      const currentUserId = this.props.currentUser && this.props.currentUser._id;
+      const showPrivateButton = task.owner === currentUserId;
+ 
+      return (
+        <Task
+          key={task._id}
+          task={task}
+          showPrivateButton={showPrivateButton}
+        />
+      );
+    });
   }
   render() {
     /*Retorna estructura de la pagina*/
      return (
        <div className="container">
          <header>
-          <h1>Lista tareas ({this.props.incompleteCount})</h1>
+          <h1>Lista de tareas ({this.props.incompleteCount})</h1>
 
           <label className="hide-completed">
             <input
@@ -91,6 +95,8 @@ class App extends Component {
   }
  
 export default withTracker(() => {
+  Meteor.subscribe('tasks');
+
   return {
     tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
     incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
